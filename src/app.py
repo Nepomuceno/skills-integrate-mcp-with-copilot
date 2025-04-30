@@ -77,6 +77,18 @@ activities = {
     }
 }
 
+# User management data
+users = {
+    "admin@mergington.edu": {
+        "role": "admin",
+        "password": "admin123"
+    },
+    "teacher@mergington.edu": {
+        "role": "teacher",
+        "password": "teacher123"
+    }
+}
+
 
 @app.get("/")
 def root():
@@ -130,3 +142,27 @@ def unregister_from_activity(activity_name: str, email: str):
     # Remove student
     activity["participants"].remove(email)
     return {"message": f"Unregistered {email} from {activity_name}"}
+
+
+@app.get("/users")
+def get_users():
+    """Retrieve all users (admin only)."""
+    return users
+
+
+@app.post("/users/add")
+def add_user(email: str, role: str, password: str):
+    """Add a new user (admin only)."""
+    if email in users:
+        raise HTTPException(status_code=400, detail="User already exists")
+    users[email] = {"role": role, "password": password}
+    return {"message": f"User {email} added successfully"}
+
+
+@app.delete("/users/remove")
+def remove_user(email: str):
+    """Remove an existing user (admin only)."""
+    if email not in users:
+        raise HTTPException(status_code=404, detail="User not found")
+    del users[email]
+    return {"message": f"User {email} removed successfully"}
